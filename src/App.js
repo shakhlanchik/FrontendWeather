@@ -1,24 +1,14 @@
-import logo from './logo.svg';
-import './App.css';
+// src/App.js
+import React from 'react'; // ОБЯЗАТЕЛЬНО!
+import './App.css'; // Ваши базовые стили (можете оставить или удалить, если они не нужны)
+import CityForecastList from './components/CityForecastList';
+import 'antd/dist/antd.css';
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+      <div className="App">
+        <CityForecastList /> {/* <-- Используем наш компонент */}
+      </div>
   );
 }
 
