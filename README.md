@@ -33,10 +33,9 @@
 
 1.  **Клонируйте репозиторий:**
     ```bash
-    git clone [https://github.com/ВАШ_НИКНЕЙМ/frontendWeather.git](https://github.com/ВАШ_НИКНЕЙМ/frontendWeather.git)
+    git clone [https://github.com/shakhlanchik/frontendWeather.git](https://github.com/shakhlanchik/frontendWeather.git)
     cd frontendWeather
     ```
-    (Замените `ВАШ_НИКНЕЙМ` на ваш реальный никнейм на GitHub).
 
 2.  **Установите зависимости:**
     ```bash
