@@ -1,70 +1,56 @@
-# Getting Started with Create React App
+# Weather App Frontend
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Это фронтенд часть приложения для просмотра прогнозов погоды, разработанная с использованием React.js и Ant Design. Приложение позволяет просматривать список городов, их текущие и будущие прогнозы погоды, а также выполнять поиск по названию города и/или страны.
 
-## Available Scripts
+## Обзор проекта
 
-In the project directory, you can run:
+Данный репозиторий содержит клиентскую часть (фронтенд) полноценного приложения для прогноза погоды. Он взаимодействует с бэкенд сервисом (который должен быть запущен отдельно) для получения, добавления, редактирования и удаления данных о городах и их прогнозах. Основная цель - предоставить удобный и интуитивно понятный интерфейс для доступа к метеорологическим данным.
 
-### `npm start`
+## Функциональность
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+* **Просмотр списка городов:** Отображение списка доступных городов.
+* **Развертывание прогнозов:** Позволяет просматривать прогнозы для каждого города в расширяемой строке таблицы.
+* **Поиск по городу и стране:** Возможность фильтровать список городов по названию города и/или страны (например, "Минск, Беларусь").
+* **Отображение погодных условий:** Интуитивные иконки для визуализации погодных условий.
+* **Административные функции (если включен `isAdmin`):**
+    * Добавление новых городов.
+    * Редактирование существующих городов.
+    * Удаление городов (со всеми связанными прогнозами).
+    * Добавление прогнозов для конкретного города.
+    * Редактирование и удаление отдельных прогнозов.
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+## Используемые технологии
 
-### `npm test`
+* **React.js:** JavaScript-библиотека для создания пользовательских интерфейсов.
+* **Ant Design:** Библиотека UI-компонентов для React, используемая для стилизации и элементов управления.
+* **Axios:** HTTP-клиент для выполнения запросов к бэкенду.
+* **react-icons/wi:** Библиотека иконок погоды.
+* **ESLint:** Инструмент для статического анализа кода.
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+## Установка и запуск
 
-### `npm run build`
+Для запуска проекта убедитесь, что у вас установлены [Node.js](https://nodejs.org/) и [npm](https://www.npmjs.com/) (или [Yarn](https://yarnpkg.com/)).
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+1.  **Клонируйте репозиторий:**
+    ```bash
+    git clone [https://github.com/ВАШ_НИКНЕЙМ/frontendWeather.git](https://github.com/ВАШ_НИКНЕЙМ/frontendWeather.git)
+    cd frontendWeather
+    ```
+    (Замените `ВАШ_НИКНЕЙМ` на ваш реальный никнейм на GitHub).
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+2.  **Установите зависимости:**
+    ```bash
+    npm install
+    # или
+    yarn install
+    ```
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+3.  **Запустите фронтенд приложение:**
+    ```bash
+    npm start
+    # или
+    yarn start
+    ```
+    Приложение будет доступно по адресу `http://localhost:3000` (или другому свободному порту, если 3000 занят).
 
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
-
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
-
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+    **Важно:** Убедитесь, что ваш бэкенд сервис запущен и доступен по адресу `http://localhost:8080` (или по тому адресу, который настроен в вашем `axios` запросе).
