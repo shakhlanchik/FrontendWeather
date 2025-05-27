@@ -84,7 +84,7 @@ const ForecastFormModal = ({ visible, onCancel, onSave, initialValues, cities, c
                     label="Минимальная температура (°C)"
                     rules={[{ required: true, message: 'Пожалуйста, введите мин. температуру!' }]}
                 >
-                    <InputNumber min={-50} max={50} style={{ width: '100%' }} />
+                    <InputNumber min={-100} max={100} style={{ width: '100%' }} />
                 </Form.Item>
 
                 <Form.Item
@@ -113,7 +113,7 @@ const ForecastFormModal = ({ visible, onCancel, onSave, initialValues, cities, c
 
                 <Form.Item
                     name="condition"
-                    label="Условия"
+                    label="Погодные условия"
                     rules={[{ required: true, message: 'Пожалуйста, введите погодные условия!' }]}
                 >
                     <Input />
