@@ -61,6 +61,7 @@ const ForecastFormModal = ({ visible, onCancel, onSave, initialValues, cities, c
                     name="cityId"
                     label="Город"
                     rules={[{ required: true, message: 'Пожалуйста, выберите город!' }]}
+                    style={{ marginBottom: '5px' }}
                 >
                     <Select placeholder="Выберите город" disabled={!!currentCityId && !initialValues}>
                         {cities.map(city => (
@@ -75,6 +76,7 @@ const ForecastFormModal = ({ visible, onCancel, onSave, initialValues, cities, c
                     name="date"
                     label="Дата"
                     rules={[{ required: true, message: 'Пожалуйста, выберите дату!' }]}
+                    style={{ marginBottom: '5px' }}
                 >
                     <DatePicker format="DD.MM.YYYY" style={{ width: '100%' }} />
                 </Form.Item>
@@ -83,6 +85,7 @@ const ForecastFormModal = ({ visible, onCancel, onSave, initialValues, cities, c
                     name="temperatureMin"
                     label="Минимальная температура (°C)"
                     rules={[{ required: true, message: 'Пожалуйста, введите мин. температуру!' }]}
+                    style={{ marginBottom: '5px' }}
                 >
                     <InputNumber min={-100} max={100} style={{ width: '100%' }} />
                 </Form.Item>
@@ -91,6 +94,7 @@ const ForecastFormModal = ({ visible, onCancel, onSave, initialValues, cities, c
                     name="temperatureMax"
                     label="Максимальная температура (°C)"
                     rules={[{ required: true, message: 'Пожалуйста, введите макс. температуру!' }]}
+                    style={{ marginBottom: '5px' }}
                 >
                     <InputNumber min={-50} max={50} style={{ width: '100%' }} />
                 </Form.Item>
@@ -99,6 +103,7 @@ const ForecastFormModal = ({ visible, onCancel, onSave, initialValues, cities, c
                     name="humidity"
                     label="Влажность (%)"
                     rules={[{ required: true, message: 'Пожалуйста, введите влажность!' }]}
+                    style={{ marginBottom: '5px' }}
                 >
                     <InputNumber min={0} max={100} style={{ width: '100%' }} />
                 </Form.Item>
@@ -107,6 +112,7 @@ const ForecastFormModal = ({ visible, onCancel, onSave, initialValues, cities, c
                     name="windSpeed"
                     label="Скорость ветра (км/ч)"
                     rules={[{ required: true, message: 'Пожалуйста, введите скорость ветра!' }]}
+                    style={{ marginBottom: '5px' }}
                 >
                     <InputNumber min={0} style={{ width: '100%' }} />
                 </Form.Item>
@@ -115,7 +121,7 @@ const ForecastFormModal = ({ visible, onCancel, onSave, initialValues, cities, c
                     name="condition"
                     label="Погодные условия"
                     rules={[{ required: true, message: 'Пожалуйста, введите погодные условия!' }]}
-                >
+                    style={{ marginBottom: '5px' }}                >
                     <Input />
                 </Form.Item>
             </Form>

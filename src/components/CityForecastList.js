@@ -6,6 +6,8 @@ import ForecastFormModal from './ForecastFormModal';
 import { PlusOutlined, EditOutlined, DeleteOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
 import { WiDaySunny, WiCloudy, WiRain, WiSnow, WiThunderstorm, WiFog } from 'react-icons/wi';
 
+const BASE_BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8080';
+
 const { Title } = Typography;
 const { confirm } = Modal;
 const { Header, Content, Footer } = Layout;
@@ -35,21 +37,38 @@ const CityForecastList = () => {
     const [searchQuery, setSearchQuery] = useState('');
 
     useEffect(() => {
-        fetchCitiesInitial();
+
+        fetchAllCitiesAndForecasts();
     }, []);
 
-    const fetchCitiesInitial = async () => {
+    const fetchAllCitiesAndForecasts = async () => {
         setLoading(true);
         try {
-            const url = `http://localhost:8080/city/all?_t=${Date.now()}`;
-            console.log('Изначальный URL для всех городов:', url);
-            const response = await axios.get(url);
-            setCities(response.data);
+
+            const citiesResponse = await axios.get(`${BASE_BACKEND_URL}/city/all?_t=${Date.now()}`);
+            const allCities = Array.isArray(citiesResponse.data) ? citiesResponse.data : [];
+            console.log('Загружены все города:', allCities);
+
+            const citiesWithForecastsPromises = allCities.map(async (city) => {
+                try {
+                    const forecastsResponse = await axios.get(`${BASE_BACKEND_URL}/forecast/by-city/${city.id}?_t=${Date.now()}`);
+
+                    const forecasts = Array.isArray(forecastsResponse.data) ? forecastsResponse.data : [];
+                    return { ...city, forecasts };
+                } catch (forecastErr) {
+                    console.warn(`Не удалось загрузить прогнозы для города ${city.name} (ID: ${city.id}):`, forecastErr);
+
+                    return { ...city, forecasts: [] };
+                }
+            });
+
+            const citiesWithForecasts = await Promise.all(citiesWithForecastsPromises);
+            setCities(citiesWithForecasts);
             setError(null);
         } catch (err) {
-            console.error('Ошибка при изначальной загрузке городов:', err);
-            if (err.response) {
-                setError(`Ошибка сервера: ${err.response.status} - ${err.response.data.error || err.message}`);
+            console.error('Ошибка при загрузке всех городов и прогнозов:', err);
+            if (axios.isAxiosError(err) && err.response) {
+                setError(`Ошибка сервера: ${err.response.status} - ${err.response.data?.message || err.message}`);
             } else if (err.request) {
                 setError('Не удалось подключиться к серверу. Убедитесь, что бэкенд запущен и доступен.');
             } else {
@@ -64,57 +83,70 @@ const CityForecastList = () => {
     const fetchCities = async (searchName = '', searchCountry = '') => {
         setLoading(true);
         try {
-            let url = `http://localhost:8080/forecast/name?_t=${Date.now()}`
+            let url;
 
-            if (searchName) {
-                url += `&name=${encodeURIComponent(searchName)}`;
-            }
-            if (searchCountry) {
-                url += `&country=${encodeURIComponent(searchCountry)}`;
+            if (searchName || searchCountry) {
+                url = `${BASE_BACKEND_URL}/forecast/filter/stream?_t=${Date.now()}`;
+                if (searchName) {
+                    url += `&cityName=${encodeURIComponent(searchName)}`;
+                }
+            } else {
+                await fetchAllCitiesAndForecasts();
+                return;
             }
 
             console.log('Отправляемый URL для поиска прогнозов:', url);
             const response = await axios.get(url);
 
-            console.log('Полученные данные от бэкенда (только прогнозы):', response.data);
+            let fetchedForecasts = [];
+            if (Array.isArray(response.data)) {
+                fetchedForecasts = response.data;
+            } else if (response.status === 204) {
+                console.log('Нет содержимого (204 No Content) от бэкенда.');
+                fetchedForecasts = [];
+            } else {
+                console.warn('Полученные данные от бэкенда не являются массивом или не соответствуют ожидаемому формату:', response.data);
+                fetchedForecasts = [];
+            }
 
-            const fetchedForecasts = response.data;
+            console.log('Полученные данные от бэкенда (после обработки):', fetchedForecasts);
+
+            const allCitiesResponse = await axios.get(`${BASE_BACKEND_URL}/city/all?_t=${Date.now()}`);
+            const allCitiesFromBackend = Array.isArray(allCitiesResponse.data) ? allCitiesResponse.data : [];
+            const allCitiesMap = new Map(allCitiesFromBackend.map(city => [city.id, city]));
 
             const groupedCities = {};
 
-            const allCitiesMap = new Map(cities.map(city => [city.id, city]));
-
             fetchedForecasts.forEach(forecast => {
                 const cityId = forecast.cityId;
-                let cityName = 'Неизвестный город';
-                let cityCountry = 'Неизвестная страна';
-
                 if (allCitiesMap.has(cityId)) {
-                    const existingCity = allCitiesMap.get(cityId);
-                    cityName = existingCity.name;
-                    cityCountry = existingCity.country;
+                    const city = allCitiesMap.get(cityId);
+                    if (!groupedCities[cityId]) {
+                        groupedCities[cityId] = {
+                            id: cityId,
+                            name: city.name,
+                            country: city.country,
+                            forecasts: []
+                        };
+                    }
+                    groupedCities[cityId].forecasts.push(forecast);
                 }
-
-                if (!groupedCities[cityId]) {
-                    groupedCities[cityId] = {
-                        id: cityId,
-                        name: cityName,
-                        country: cityCountry,
-                        forecasts: []
-                    };
-                }
-                groupedCities[cityId].forecasts.push(forecast);
             });
 
-            const resultCities = Object.values(groupedCities);
+            let resultCities = Object.values(groupedCities);
+
+            if (searchCountry) {
+                resultCities = resultCities.filter(city =>
+                    city.country.toLowerCase().includes(searchCountry.toLowerCase())
+                );
+            }
 
             setCities(resultCities);
-
             setError(null);
         } catch (err) {
-            console.error('Ошибка при поиске прогнозов:', err);
-            if (err.response) {
-                setError(`Ошибка сервера: ${err.response.status} - ${err.response.data.error || err.message}`);
+            console.error('Ошибка при поиске данных:', err);
+            if (axios.isAxiosError(err) && err.response) {
+                setError(`Ошибка сервера: ${err.response.status} - ${err.response.data?.message || err.message}`);
             } else if (err.request) {
                 setError('Не удалось подключиться к серверу. Убедитесь, что бэкенд запущен и доступен.');
             } else {
@@ -138,8 +170,12 @@ const CityForecastList = () => {
             name = parts[0];
             country = parts[1];
         }
-
-        fetchCities(name, country);
+        // Если поиск пустой, возвращаемся к полной загрузке
+        if (!name && !country) {
+            fetchAllCitiesAndForecasts();
+        } else {
+            fetchCities(name, country);
+        }
     };
 
     const showAddCityModal = () => {
@@ -161,14 +197,15 @@ const CityForecastList = () => {
         try {
             if (editingCity) {
                 const updatedCity = { ...editingCity, ...values };
-                await axios.put(`http://localhost:8080/city/${editingCity.id}`, updatedCity);
+                await axios.put(`${BASE_BACKEND_URL}/city/${editingCity.id}`, updatedCity);
                 message.success(`Город "${values.name}" успешно обновлен!`);
             } else {
-                await axios.post('http://localhost:8080/city', values);
+                await axios.post(`${BASE_BACKEND_URL}/city`, values);
                 message.success(`Город "${values.name}" успешно добавлен!`);
             }
             setIsCityModalVisible(false);
-            fetchCities();
+            // После сохранения города, перезагружаем все города и их прогнозы
+            fetchAllCitiesAndForecasts();
         } catch (err) {
             console.error('Ошибка при сохранении города:', err);
             message.error(`Ошибка при сохранении города: ${err.response?.data?.error || err.message}`);
@@ -185,9 +222,10 @@ const CityForecastList = () => {
             cancelText: 'Отмена',
             onOk: async () => {
                 try {
-                    await axios.delete(`http://localhost:8080/city/${cityId}`);
+                    await axios.delete(`${BASE_BACKEND_URL}/city/${cityId}`);
                     message.success(`Город "${cityName}" успешно удален!`);
-                    fetchCities();
+                    // После удаления города, перезагружаем все города и их прогнозы
+                    fetchAllCitiesAndForecasts();
                 } catch (err) {
                     console.error('Ошибка при удалении города:', err);
                     message.error(`Ошибка при удалении города: ${err.response?.data?.error || err.message}`);
@@ -218,18 +256,19 @@ const CityForecastList = () => {
         try {
             const forecastDataToSend = {
                 ...values,
-                city: { id: values.cityId }
+                cityId: values.cityId // Убедитесь, что cityId передается правильно
             };
 
             if (editingForecast) {
-                await axios.put(`http://localhost:8080/forecast/${editingForecast.id}`, { ...editingForecast, ...forecastDataToSend });
+                await axios.put(`${BASE_BACKEND_URL}/forecast/${editingForecast.id}`, forecastDataToSend);
                 message.success(`Прогноз на ${values.date} успешно обновлен!`);
             } else {
-                await axios.post('http://localhost:8080/forecast', forecastDataToSend);
+                await axios.post(`${BASE_BACKEND_URL}/forecast`, forecastDataToSend);
                 message.success(`Прогноз на ${values.date} успешно добавлен!`);
             }
             setIsForecastModalVisible(false);
-            fetchCities();
+            // После сохранения прогноза, перезагружаем все города и их прогнозы
+            fetchAllCitiesAndForecasts();
         } catch (err) {
             console.error('Ошибка при сохранении прогноза:', err);
             message.error(`Ошибка при сохранении прогноза: ${err.response?.data?.error || err.message}`);
@@ -246,32 +285,22 @@ const CityForecastList = () => {
             cancelText: 'Отмена',
             onOk: async () => {
                 try {
-                    await axios.delete(`http://localhost:8080/forecast/${forecastId}`);
+                    await axios.delete(`${BASE_BACKEND_URL}/forecast/${forecastId}`);
                     message.success(`Прогноз на ${forecastDate} успешно удален!`);
-                    setCities(prevCities => {
-                        return prevCities.map(city => {
-                            if (city.forecasts) {
-                                return {
-                                    ...city,
-                                    forecasts: city.forecasts.filter(forecast => forecast.id !== forecastId)
-                                };
-                            }
-                            return city;
-                        });
-                    });
+                    // После удаления прогноза, перезагружаем все города и их прогнозы
+                    fetchAllCitiesAndForecasts();
                 } catch (err) {
                     console.error('Ошибка при удалении прогноза:', err);
                     message.error(`Ошибка при удалении прогноза: ${err.response?.data?.error || err.message}`);
-                    fetchCities();
                 }
             },
         });
     };
 
     const cityColumns = [
-        ...(isAdmin ? [{ title: 'ID', dataIndex: 'id', key: 'id' }] : []),
-        { title: 'Город', dataIndex: 'name', key: 'name', sorter: (a, b) => a.name.localeCompare(b.name) },
-        { title: 'Страна', dataIndex: 'country', key: 'country', sorter: (a, b) => a.country.localeCompare(b.country) },
+        ...(isAdmin ? [{ title: 'ID', dataIndex: 'id', key: 'id', width: 100 }] : []),
+        { title: 'Город', dataIndex: 'name', key: 'name', sorter: (a, b) => a.name.localeCompare(b.name), width: 300 },
+        { title: 'Страна', dataIndex: 'country', key: 'country', sorter: (a, b) => a.country.localeCompare(b.country), width: 300 },
         ...(isAdmin ? [{
             title: 'Действия',
             key: 'city_actions',
@@ -301,11 +330,12 @@ const CityForecastList = () => {
                     </Button>
                 </Space>
             ),
+            width: 700,
         }] : []),
     ];
 
     const forecastColumns = [
-         ...(isAdmin ? [{ title: 'ID Прогноза', dataIndex: 'id', key: 'id' }] : []),
+        ...(isAdmin ? [{ title: 'ID Прогноза', dataIndex: 'id', key: 'id' }] : []),
         {
             title: 'Дата',
             dataIndex: 'date',
@@ -399,6 +429,31 @@ const CityForecastList = () => {
         );
     };
 
+    const handleExpand = async (expanded, record) => {
+        const keys = expanded
+            ? [...expandedRowKeys, record.id]
+            : expandedRowKeys.filter(key => key !== record.id);
+        setExpandedRowKeys(keys);
+
+        // При разворачивании строки, если прогнозы для города еще не загружены, загружаем их
+        if (expanded && (!record.forecasts || record.forecasts.length === 0)) {
+            try {
+                const forecastsResponse = await axios.get(`${BASE_BACKEND_URL}/forecast/by-city/${record.id}?_t=${Date.now()}`);
+                const forecasts = Array.isArray(forecastsResponse.data) ? forecastsResponse.data : [];
+
+                setCities(prevCities =>
+                    prevCities.map(city =>
+                        city.id === record.id ? { ...city, forecasts } : city
+                    )
+                );
+            } catch (err) {
+                console.error(`Ошибка при загрузке прогнозов для города ${record.name} при развертывании:`, err);
+                message.error(`Не удалось загрузить прогнозы для ${record.name}.`);
+            }
+        }
+    };
+
+
     if (loading) {
         return (
             <Layout style={{ minHeight: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
@@ -429,22 +484,16 @@ const CityForecastList = () => {
                 <Title level={3} style={{ margin: 0, color: '#1890ff' }}>
                     Прогноз погоды
                 </Title>
-                {/* Здесь можно добавить логику входа/выхода/регистрации */}
-                <Space>
-                    {/* <Button type="primary">Войти</Button> */}
-                </Space>
                 <Space>
                     {isAdmin && (
-                    <Button
-                        type="primary"
-                        icon={<PlusOutlined />}
-                        onClick={showAddCityModal}
-                    >
-                        Добавить город
-                    </Button>
-                    )} {/*
-                    {/* <Button type="primary">Войти</Button> */}
-                    {/* Для других кнорок, например, для входа/выхода, они могут быть здесь */}
+                        <Button
+                            type="primary"
+                            icon={<PlusOutlined />}
+                            onClick={showAddCityModal}
+                        >
+                            Добавить город
+                        </Button>
+                    )}
                 </Space>
             </Header>
             <Content style={{ padding: '24px 50px' }}>
@@ -466,14 +515,10 @@ const CityForecastList = () => {
                         rowKey="id"
                         expandable={{
                             expandedRowRender: expandedRowRender,
+                            // Новое или измененное свойство:
                             rowExpandable: record => record.forecasts && record.forecasts.length > 0,
                             expandedRowKeys: expandedRowKeys,
-                            onExpand: (expanded, record) => {
-                                const keys = expanded
-                                    ? [...expandedRowKeys, record.id]
-                                    : expandedRowKeys.filter(key => key !== record.id);
-                                setExpandedRowKeys(keys);
-                            },
+                            onExpand: handleExpand,
                         }}
                         loading={loading}
                         className="city-table"

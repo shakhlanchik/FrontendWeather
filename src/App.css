@@ -37,16 +37,9 @@
   }
 }
 
-/* src/App.css */
-
 body {
-  background: linear-gradient(to bottom right, #87ceeb, #ffffff); /* Небесный градиент */
-  /* Или фоновое изображение */
-  /* background-image: url('./assets/cloud-background.jpg'); */
-  /* background-size: cover; */
-  /* background-position: center; */
-  /* background-repeat: no-repeat; */
-  min-height: 100vh; /* Занимает всю высоту видимой области */
+  background: linear-gradient(to bottom right, #87ceeb, #ffffff);
+  min-height: 100vh;
   margin: 0;
   padding: 0;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
@@ -57,36 +50,35 @@ body {
 }
 
 .ant-layout-header {
-  background-color: rgba(255, 255, 255, 0.8) !important; /* Полупрозрачный белый хедер */
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); /* Легкая тень */
+  background-color: rgba(255, 255, 255, 0.8) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .ant-layout-content {
   padding: 24px 50px;
-  min-height: calc(100vh - 64px - 70px); /* Высота контента минус хедер и футер */
+  min-height: calc(100vh - 64px - 70px);
   display: flex;
   flex-direction: column;
-  align-items: center; /* Центрирование содержимого */
+  align-items: center;
   justify-content: flex-start;
 }
 
-.site-layout-content { /* Класс, который вы, возможно, используете для содержимого */
+.site-layout-content {
   background: #ffffff;
   padding: 24px;
   min-height: 280px;
-  border-radius: 8px; /* Скругленные углы для контент-блока */
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); /* Более выраженная тень */
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-/* Стили для таблицы */
 .ant-table-wrapper {
   border-radius: 8px;
-  overflow: hidden; /* Важно для скругления углов таблицы */
+  overflow: hidden;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
 .ant-table-thead > tr > th {
-  background-color: #e6f7ff !important; /* Более светлый фон для заголовков таблицы */
-  color: #1890ff; /* Цвет текста заголовков */
+  background-color: #e6f7ff !important;
+  color: #1890ff;
   font-weight: bold;
 }
