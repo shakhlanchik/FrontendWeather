@@ -9,8 +9,6 @@ RUN npm install --frozen-lockfile --production=false
 
 COPY . .
 
-ENV SKIP_PREFLIGHT_CHECK=true
-
 RUN npm run build
 
 FROM nginx:alpine
